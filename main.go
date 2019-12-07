@@ -1,25 +1,26 @@
 package main
 
 import (
-	"fmt"
-
-	// "github.com/ianhecker/golang-concurrency/concurrency"
 	"github.com/ianhecker/golang-concurrency/addition"
+	"github.com/ianhecker/golang-concurrency/plot"
+	// "github.com/ianhecker/golang-concurrency/random"
 	"github.com/ianhecker/golang-concurrency/read"
 	"github.com/ianhecker/golang-concurrency/timer"
 )
 
 func main() {
-	// runtime.GOMAXPROCS(1)
 
 	routineList := read.ReadFile("./routines.data") //Read in lists from files
-	integerList := read.ReadFile("./numbers.data")
+	integerList := read.ReadFile("./million_numbers.data")
+	scatterPlot := plot.MakeScatterPlot(len(*routineList))
 
-	for _, routines := range *routineList { //For each routine count
+	for index, routines := range *routineList { //For each routine count
 
-		timer := timer.NewTimer()
-		sum := addition.Add(*integerList, routines, timer)
+		timer := timer.NewTimer() //Timer for duration of go routines
+		addition.Add(*integerList, routines, timer)
 
-		fmt.Printf("sum=%d at routines=%d took %dns=%dms\n", sum, routines, timer.Nanoseconds(), timer.Milliseconds())
+		scatterPlot.AddPoint(routines, timer.Nanoseconds(), index) //plot go routine count vs time
 	}
+
+	scatterPlot.Plot("Go_Routines_vs_Time_Nanoseconds") //plot all points in a png
 }
